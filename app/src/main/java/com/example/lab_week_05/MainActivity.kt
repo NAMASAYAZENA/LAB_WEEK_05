@@ -58,12 +58,15 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val imageList = response.body()
                     val firstImage = imageList?.firstOrNull()
+
+                    // 🔥 ambil breed name, kalau kosong isi "Unknown"
+                    val breedName = firstImage?.breeds?.firstOrNull()?.name ?: "Unknown"
+
+                    // tampilkan breed di TextView
+                    apiResponseView.text = getString(R.string.image_placeholder, breedName)
+
+                    // tetap load image ke ImageView
                     val imageUrl = firstImage?.imageUrl.orEmpty()
-
-                    // tampilkan URL di TextView
-                    apiResponseView.text = getString(R.string.image_placeholder, imageUrl)
-
-                    // tampilkan gambar di ImageView pakai Glide
                     if (imageUrl.isNotBlank()) {
                         imageLoader.loadImage(imageUrl, imageResultView)
                     } else {
