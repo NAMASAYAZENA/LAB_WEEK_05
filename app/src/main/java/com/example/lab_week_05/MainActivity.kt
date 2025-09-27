@@ -2,9 +2,12 @@ package com.example.lab_week_05
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lab_week_05.api.CatApiService
+import com.example.lab_week_05.loader.GlideLoader
+import com.example.lab_week_05.loader.ImageLoader
 import com.example.lab_week_05.model.ImageData
 import retrofit2.*
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -14,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://api.thecatapi.com/v1/")
-            .addConverterFactory(MoshiConverterFactory.create()) // Moshi digunakan di Part 2
+            .addConverterFactory(MoshiConverterFactory.create())
             .build()
     }
 
@@ -24,6 +27,14 @@ class MainActivity : AppCompatActivity() {
 
     private val apiResponseView: TextView by lazy {
         findViewById(R.id.api_response)
+    }
+
+    private val imageResultView: ImageView by lazy {
+        findViewById(R.id.image_result)
+    }
+
+    private val imageLoader: ImageLoader by lazy {
+        GlideLoader(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,8 +57,18 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     val imageList = response.body()
-                    val firstImage = imageList?.firstOrNull()?.imageUrl ?: "No URL"
-                    apiResponseView.text = getString(R.string.image_placeholder, firstImage)
+                    val firstImage = imageList?.firstOrNull()
+                    val imageUrl = firstImage?.imageUrl.orEmpty()
+
+                    // tampilkan URL di TextView
+                    apiResponseView.text = getString(R.string.image_placeholder, imageUrl)
+
+                    // tampilkan gambar di ImageView pakai Glide
+                    if (imageUrl.isNotBlank()) {
+                        imageLoader.loadImage(imageUrl, imageResultView)
+                    } else {
+                        Log.d(MAIN_ACTIVITY, "Missing image URL")
+                    }
                 } else {
                     Log.e(
                         MAIN_ACTIVITY,
